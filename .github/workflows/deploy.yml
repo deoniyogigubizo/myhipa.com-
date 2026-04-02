@@ -1,0 +1,200 @@
+# ============================================
+# GitHub Actions - CI/CD Pipeline for Hipa
+# ============================================
+
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+jobs:
+  # ============================================
+  # Test and Lint
+  # ============================================
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run TypeScript type check
+        run: npm run type-check
+      
+      - name: Run tests
+        run: npm run test -- --coverage
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # ============================================
+  # Build Docker Image
+  # ============================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ECR_REGISTRY }}/hipa-web
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value={{ datetime 'YYYY-MM-DD-HHMMSS' }}-${{ github.sha }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.ECR_REGISTRY }}/hipa-web:buildcache
+          cache-to: type=registry,ref=${{ env.ECR_REGISTRY }}/hipa-web:buildcache,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_S3_BUCKET=${{ secrets.NEXT_PUBLIC_S3_BUCKET }}
+            NEXT_PUBLIC_CLOUDFRONT_URL=${{ secrets.NEXT_PUBLIC_CLOUDFRONT_URL }}
+
+  # ============================================
+  # Deploy to Staging
+  # ============================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Update ECS task definition
+        run: |
+          # Get latest image tag
+          IMAGE_TAG=${{ github.sha }}
+          
+          # Update task definition
+          aws ecs update-service \
+            --cluster hipa-staging-cluster \
+            --service hipa-staging-web \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+      
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster hipa-staging-cluster \
+            --services hipa-staging-web \
+            --region ${{ env.AWS_REGION }}
+      
+      - name: Notify deployment
+        run: echo "Deployed to staging successfully"
+
+  # ============================================
+  # Deploy to Production
+  # ============================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Update ECS task definition
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          
+          # Update task definition for production
+          aws ecs update-service \
+            --cluster hipa-prod-cluster \
+            --service hipa-prod-web \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+      
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster hipa-prod-cluster \
+            --services hipa-prod-web \
+            --region ${{ env.AWS_REGION }}
+      
+      - name: Create GitHub release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          draft: false
+          prerelease: false
+      
+      - name: Notify deployment
+        run: echo "Deployed to production successfully"

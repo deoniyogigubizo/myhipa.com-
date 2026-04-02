@@ -1,26 +1,176 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Typography */
+  --font-outfit: 'Outfit', system-ui, sans-serif;
+  
+  /* Color Scheme: Beige 60%, Black 30%, Skyblue 5%, Green 5% */
+  /* Beige - Main backgrounds (60%) */
+  --color-beige: #f5f5dc;
+  --color-beige-light: #faebd7;
+  --color-beige-dark: #e8e4c9;
+  
+  /* Black - Text/borders (30%) */
+  --color-black: #1a1a1a;
+  --color-black-light: #2d2d2d;
+  --color-black-dark: #000000;
+  
+  /* Skyblue - Accents (5%) */
+  --color-sky: #87ceeb;
+  --color-sky-light: #b0e0f0;
+  --color-sky-dark: #5bbce4;
+  
+  /* Green - Actions (5%) */
+  --color-green: #16a34a;
+  --color-green-light: #22c55e;
+  --color-green-dark: #15803d;
+  
+  /* Default */
+  --background: #f5f5dc;
+  --foreground: #1a1a1a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* iOS momentum scroll */
+.ios-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* App-like touch feedback */
+.tap-scale:active {
+  transform: scale(0.97);
+}
+
+/* Bottom safe area for notched phones */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Touch target size indicator */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Smooth transitions */
+.transition-app {
+  transition: all 0.2s ease-out;
+}
+
+/* Beige background */
+.bg-app-beige {
+  background-color: var(--color-beige);
+}
+
+/* Full width container */
+.full-width-section {
+  width: 100%;
+  max-width: 100vw;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Black text */
+.text-app-black {
+  color: var(--color-black);
+}
+
+/* Sky accent */
+.text-sky-accent {
+  color: var(--color-sky);
+}
+
+.bg-sky-accent {
+  background-color: var(--color-sky);
+}
+
+/* Green action */
+.bg-green-action {
+  background-color: var(--color-green);
+}
+
+.text-green-action {
+  color: var(--color-green);
+}
+
+/* Black buttons */
+.btn-black {
+  background-color: var(--color-black);
+  color: white;
+}
+
+.btn-black:active {
+  background-color: var(--color-black-light);
+}
+
+/* Beige card */
+.card-beige {
+  background-color: var(--color-beige-light);
+  border: 1px solid var(--color-beige-dark);
+}
+
+/* Border colors */
+.border-app-black {
+  border-color: var(--color-black);
+}
+
+.border-sky-accent {
+  border-color: var(--color-sky);
 }

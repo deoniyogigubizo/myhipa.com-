@@ -1,0 +1,40 @@
+{
+  "name": "Hipa Marketplace",
+  "short_name": "Hipa",
+  "description": "Africa's trusted marketplace for buyers and sellers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["shopping", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Search Products",
+      "url": "/search",
+      "description": "Search for products"
+    },
+    {
+      "name": "Cart",
+      "url": "/cart",
+      "description": "View your cart"
+    },
+    {
+      "name": "Community",
+      "url": "/community",
+      "description": "Join our community"
+    }
+  ]
+}
