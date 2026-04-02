@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import { verifyToken, extractToken } from '@/lib/auth/middleware';
 import crypto from 'crypto';
 
+
+export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa';
 

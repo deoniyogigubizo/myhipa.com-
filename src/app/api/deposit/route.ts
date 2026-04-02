@@ -4,6 +4,8 @@ import { User } from '@/lib/database/schemas'
 import { verifyToken, extractToken } from '@/lib/auth/middleware'
 import { MTNMoMoService } from '@/lib/payments/mtn'
 
+
+export const dynamic = "force-dynamic";
 const mtn = new MTNMoMoService()
 
 export async function POST(request: NextRequest) {

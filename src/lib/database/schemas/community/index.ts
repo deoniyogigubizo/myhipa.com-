@@ -1,18 +1,23 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 // ============================================
 // POST TYPES
 // ============================================
 
-export type PostType = 
-  | 'product_share'    // "I just listed this — check it out"
-  | 'review_post'      // Shares a review publicly to feed
-  | 'question'         // "Does anyone know a supplier for X?"
-  | 'deal_alert'       // "Flash sale for next 2 hours"
-  | 'community_update' // Text/image/video post
-  | 'ama_question';   // Question during AMA session
+export type PostType =
+  | "product_share" // "I just listed this — check it out"
+  | "review_post" // Shares a review publicly to feed
+  | "question" // "Does anyone know a supplier for X?"
+  | "deal_alert" // "Flash sale for next 2 hours"
+  | "community_update" // Text/image/video post
+  | "ama_question"; // Question during AMA session
 
-export type PostStatus = 'draft' | 'published' | 'hidden' | 'under_review' | 'deleted';
+export type PostStatus =
+  | "draft"
+  | "published"
+  | "hidden"
+  | "under_review"
+  | "deleted";
 
 // ============================================
 // POST SCHEMA
@@ -32,7 +37,7 @@ export interface IPost extends Document {
   content: {
     text: string;
     media?: Array<{
-      type: 'image' | 'video';
+      type: "image" | "video";
       url: string;
       thumbnail?: string;
     }>;
@@ -45,7 +50,7 @@ export interface IPost extends Document {
     };
   };
   groupId?: mongoose.Types.ObjectId;
-  visibility: 'public' | 'followers' | 'group' | 'premium';
+  visibility: "public" | "followers" | "group" | "premium";
   engagement: {
     likes: number;
     comments: number;
@@ -78,26 +83,35 @@ export interface IPost extends Document {
 const PostSchema = new Schema<IPost>(
   {
     author: {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
       name: { type: String, required: true },
       avatar: String,
       isVerified: { type: Boolean, default: false },
       reputationScore: { type: Number, default: 0 },
-      level: { type: String, default: 'newcomer' },
+      level: { type: String, default: "newcomer" },
     },
     type: {
       type: String,
-      enum: ['product_share', 'review_post', 'question', 'deal_alert', 'community_update', 'ama_question'],
+      enum: [
+        "product_share",
+        "review_post",
+        "question",
+        "deal_alert",
+        "community_update",
+        "ama_question",
+      ],
       required: true,
     },
     content: {
       text: { type: String, required: true },
-      media: [{
-        type: { type: String, enum: ['image', 'video'] },
-        url: String,
-        thumbnail: String,
-      }],
-      productId: { type: Schema.Types.ObjectId, ref: 'Product' },
+      media: [
+        {
+          type: { type: String, enum: ["image", "video"] },
+          url: String,
+          thumbnail: String,
+        },
+      ],
+      productId: { type: Schema.Types.ObjectId, ref: "Product" },
       productSnapshot: {
         title: String,
         price: Number,
@@ -105,11 +119,11 @@ const PostSchema = new Schema<IPost>(
         slug: String,
       },
     },
-    groupId: { type: Schema.Types.ObjectId, ref: 'Group' },
+    groupId: { type: Schema.Types.ObjectId, ref: "Group" },
     visibility: {
       type: String,
-      enum: ['public', 'followers', 'group', 'premium'],
-      default: 'public',
+      enum: ["public", "followers", "group", "premium"],
+      default: "public",
     },
     engagement: {
       likes: { type: Number, default: 0 },
@@ -118,9 +132,9 @@ const PostSchema = new Schema<IPost>(
       saves: { type: Number, default: 0 },
       views: { type: Number, default: 0 },
     },
-    likedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    savedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    mentions: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    likedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    savedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    mentions: [{ type: Schema.Types.ObjectId, ref: "User" }],
     tags: [String],
     location: {
       city: String,
@@ -128,14 +142,16 @@ const PostSchema = new Schema<IPost>(
     },
     status: {
       type: String,
-      enum: ['draft', 'published', 'hidden', 'under_review', 'deleted'],
-      default: 'published',
+      enum: ["draft", "published", "hidden", "under_review", "deleted"],
+      default: "published",
     },
-    flags: [{
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      reason: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
+    flags: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        reason: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     boosted: { type: Boolean, default: false },
     boostedUntil: Date,
     aiScore: { type: Number, default: 0 },
@@ -143,12 +159,12 @@ const PostSchema = new Schema<IPost>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for feed queries
 PostSchema.index({ createdAt: -1 });
-PostSchema.index({ 'author.userId': 1 });
+PostSchema.index({ "author.userId": 1 });
 PostSchema.index({ groupId: 1 });
 PostSchema.index({ status: 1, createdAt: -1 });
 PostSchema.index({ tags: 1 });
@@ -172,7 +188,7 @@ export interface IComment extends Document {
   content: {
     text: string;
     media?: Array<{
-      type: 'image' | 'video';
+      type: "image" | "video";
       url: string;
     }>;
   };
@@ -194,42 +210,46 @@ export interface IComment extends Document {
 
 const CommentSchema = new Schema<IComment>(
   {
-    postId: { type: Schema.Types.ObjectId, ref: 'Post', required: true },
-    parentCommentId: { type: Schema.Types.ObjectId, ref: 'Comment' },
+    postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+    parentCommentId: { type: Schema.Types.ObjectId, ref: "Comment" },
     author: {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
       name: { type: String, required: true },
       avatar: String,
       isVerified: { type: Boolean, default: false },
-      level: { type: String, default: 'newcomer' },
+      level: { type: String, default: "newcomer" },
     },
     content: {
       text: { type: String, required: true },
-      media: [{
-        type: { type: String, enum: ['image', 'video'] },
-        url: String,
-      }],
+      media: [
+        {
+          type: { type: String, enum: ["image", "video"] },
+          url: String,
+        },
+      ],
     },
     upvotes: { type: Number, default: 0 },
-    upvotedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    upvotedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isPinned: { type: Boolean, default: false },
     isAcceptedAnswer: { type: Boolean, default: false },
     status: {
       type: String,
-      enum: ['draft', 'published', 'hidden', 'under_review', 'deleted'],
-      default: 'published',
+      enum: ["draft", "published", "hidden", "under_review", "deleted"],
+      default: "published",
     },
-    flags: [{
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      reason: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
-    mentions: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    flags: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        reason: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    mentions: [{ type: Schema.Types.ObjectId, ref: "User" }],
     deletedAt: Date,
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 CommentSchema.index({ postId: 1, createdAt: -1 });
@@ -239,8 +259,8 @@ CommentSchema.index({ parentCommentId: 1 });
 // GROUP SCHEMA
 // ============================================
 
-export type GroupType = 'category' | 'location' | 'interest' | 'seller_only';
-export type GroupPrivacy = 'public' | 'private' | 'seller_only';
+export type GroupType = "category" | "location" | "interest" | "seller_only";
+export type GroupPrivacy = "public" | "private" | "seller_only";
 
 export interface IGroup extends Document {
   _id: mongoose.Types.ObjectId;
@@ -267,7 +287,7 @@ export interface IGroup extends Document {
   }>;
   members: Array<{
     userId: mongoose.Types.ObjectId;
-    role: 'member' | 'moderator' | 'admin';
+    role: "member" | "moderator" | "admin";
     joinedAt: Date;
   }>;
   memberCount: number;
@@ -296,13 +316,13 @@ const GroupSchema = new Schema<IGroup>(
     description: { type: String, required: true },
     type: {
       type: String,
-      enum: ['category', 'location', 'interest', 'seller_only'],
+      enum: ["category", "location", "interest", "seller_only"],
       required: true,
     },
     privacy: {
       type: String,
-      enum: ['public', 'private', 'seller_only'],
-      default: 'public',
+      enum: ["public", "private", "seller_only"],
+      default: "public",
     },
     category: String,
     location: {
@@ -312,29 +332,39 @@ const GroupSchema = new Schema<IGroup>(
     coverImage: String,
     icon: String,
     admin: {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
       name: { type: String, required: true },
     },
-    moderators: [{
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      name: String,
-      addedAt: { type: Date, default: Date.now },
-    }],
-    members: [{
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      role: { type: String, enum: ['member', 'moderator', 'admin'], default: 'member' },
-      joinedAt: { type: Date, default: Date.now },
-    }],
+    moderators: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        name: String,
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
+    members: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        role: {
+          type: String,
+          enum: ["member", "moderator", "admin"],
+          default: "member",
+        },
+        joinedAt: { type: Date, default: Date.now },
+      },
+    ],
     memberCount: { type: Number, default: 0 },
     rules: [String],
-    pinnedPosts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
+    pinnedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     weeklyDigestEnabled: { type: Boolean, default: true },
-    groupDeals: [{
-      sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
-      productId: { type: Schema.Types.ObjectId, ref: 'Product' },
-      discount: Number,
-      expiresAt: Date,
-    }],
+    groupDeals: [
+      {
+        sellerId: { type: Schema.Types.ObjectId, ref: "Seller" },
+        productId: { type: Schema.Types.ObjectId, ref: "Product" },
+        discount: Number,
+        expiresAt: Date,
+      },
+    ],
     stats: {
       postsThisWeek: { type: Number, default: 0 },
       postsThisMonth: { type: Number, default: 0 },
@@ -343,18 +373,16 @@ const GroupSchema = new Schema<IGroup>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-GroupSchema.index({ slug: 1 }, { unique: true });
-GroupSchema.index({ type: 1, isActive: 1 });
-GroupSchema.index({ 'members.userId': 1 });
+// Indexes removed - defined in group.schema.ts
 
 // ============================================
 // GROUP MEMBER SCHEMA (Separate collection)
 // ============================================
 
-export type GroupMemberRole = 'member' | 'moderator' | 'admin';
+export type GroupMemberRole = "member" | "moderator" | "admin";
 
 export interface IGroupMember extends Document {
   _id: mongoose.Types.ObjectId;
@@ -366,32 +394,30 @@ export interface IGroupMember extends Document {
 
 const GroupMemberSchema = new Schema<IGroupMember>(
   {
-    groupId: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'Group', 
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: "Group",
       required: true,
-      index: true
     },
-    userId: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
-      index: true
     },
     role: {
       type: String,
-      enum: ['member', 'moderator', 'admin'],
-      default: 'member',
+      enum: ["member", "moderator", "admin"],
+      default: "member",
     },
-    joinedAt: { 
-      type: Date, 
-      default: Date.now 
+    joinedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
     timestamps: false,
-    collection: 'group_members'
-  }
+    collection: "group_members",
+  },
 );
 
 // Compound unique index (one membership per user per group)
@@ -417,7 +443,7 @@ export interface IQuestion extends Document {
   content: {
     text: string;
     media?: Array<{
-      type: 'image' | 'video';
+      type: "image" | "video";
       url: string;
     }>;
   };
@@ -440,7 +466,7 @@ export interface IQuestion extends Document {
     content: {
       text: string;
       media?: Array<{
-        type: 'image' | 'video';
+        type: "image" | "video";
         url: string;
       }>;
     };
@@ -469,19 +495,21 @@ const QuestionSchema = new Schema<IQuestion>(
     title: { type: String, required: true },
     slug: { type: String, required: true },
     author: {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
       name: { type: String, required: true },
       avatar: String,
-      level: { type: String, default: 'newcomer' },
+      level: { type: String, default: "newcomer" },
     },
-    groupId: { type: Schema.Types.ObjectId, ref: 'Group' },
-    productId: { type: Schema.Types.ObjectId, ref: 'Product' },
+    groupId: { type: Schema.Types.ObjectId, ref: "Group" },
+    productId: { type: Schema.Types.ObjectId, ref: "Product" },
     content: {
       text: { type: String, required: true },
-      media: [{
-        type: { type: String, enum: ['image', 'video'] },
-        url: String,
-      }],
+      media: [
+        {
+          type: { type: String, enum: ["image", "video"] },
+          url: String,
+        },
+      ],
     },
     tags: [String],
     category: String,
@@ -489,72 +517,78 @@ const QuestionSchema = new Schema<IQuestion>(
       city: String,
       country: String,
     },
-    answers: [{
-      author: {
-        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        name: { type: String, required: true },
-        avatar: String,
-        isVerified: { type: Boolean, default: false },
-        sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
-        level: { type: String, default: 'newcomer' },
+    answers: [
+      {
+        author: {
+          userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+          name: { type: String, required: true },
+          avatar: String,
+          isVerified: { type: Boolean, default: false },
+          sellerId: { type: Schema.Types.ObjectId, ref: "Seller" },
+          level: { type: String, default: "newcomer" },
+        },
+        content: {
+          text: { type: String, required: true },
+          media: [
+            {
+              type: { type: String, enum: ["image", "video"] },
+              url: String,
+            },
+          ],
+        },
+        upvotes: { type: Number, default: 0 },
+        upvotedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+        isPinned: { type: Boolean, default: false },
+        isAcceptedAnswer: { type: Boolean, default: false },
+        createdAt: { type: Date, default: Date.now },
+        updatedAt: { type: Date, default: Date.now },
       },
-      content: {
-        text: { type: String, required: true },
-        media: [{
-          type: { type: String, enum: ['image', 'video'] },
-          url: String,
-        }],
-      },
-      upvotes: { type: Number, default: 0 },
-      upvotedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-      isPinned: { type: Boolean, default: false },
-      isAcceptedAnswer: { type: Boolean, default: false },
-      createdAt: { type: Date, default: Date.now },
-      updatedAt: { type: Date, default: Date.now },
-    }],
+    ],
     upvoteCount: { type: Number, default: 0 },
     viewCount: { type: Number, default: 0 },
     status: {
       type: String,
-      enum: ['draft', 'published', 'hidden', 'under_review', 'deleted'],
-      default: 'published',
+      enum: ["draft", "published", "hidden", "under_review", "deleted"],
+      default: "published",
     },
-    flags: [{
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      reason: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
+    flags: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        reason: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     seoKeywords: [String],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 QuestionSchema.index({ slug: 1 }, { unique: true });
 QuestionSchema.index({ tags: 1 });
 QuestionSchema.index({ category: 1 });
-QuestionSchema.index({ 'answers.isAcceptedAnswer': -1, 'answers.upvotes': -1 });
+QuestionSchema.index({ "answers.isAcceptedAnswer": -1, "answers.upvotes": -1 });
 
 // ============================================
 // NOTIFICATION SCHEMA
 // ============================================
 
-export type NotificationType = 
-  | 'like' 
-  | 'comment' 
-  | 'follow' 
-  | 'mention'
-  | 'answer'
-  | 'upvote'
-  | 'badge_earned'
-  | 'level_up'
-  | 'deal_alert'
-  | 'group_invite'
-  | 'ama_reminder'
-  | 'order_update'
-  | 'review_received'
-  | 'question_answered';
+export type NotificationType =
+  | "like"
+  | "comment"
+  | "follow"
+  | "mention"
+  | "answer"
+  | "upvote"
+  | "badge_earned"
+  | "level_up"
+  | "deal_alert"
+  | "group_invite"
+  | "ama_reminder"
+  | "order_update"
+  | "review_received"
+  | "question_answered";
 
 export interface INotification extends Document {
   _id: mongoose.Types.ObjectId;
@@ -582,23 +616,38 @@ export interface INotification extends Document {
 
 const NotificationSchema = new Schema<INotification>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     type: {
       type: String,
-      enum: ['like', 'comment', 'follow', 'mention', 'answer', 'upvote', 'badge_earned', 'level_up', 'deal_alert', 'group_invite', 'ama_reminder', 'order_update', 'review_received', 'question_answered'],
+      enum: [
+        "like",
+        "comment",
+        "follow",
+        "mention",
+        "answer",
+        "upvote",
+        "badge_earned",
+        "level_up",
+        "deal_alert",
+        "group_invite",
+        "ama_reminder",
+        "order_update",
+        "review_received",
+        "question_answered",
+      ],
       required: true,
     },
     title: { type: String, required: true },
     message: { type: String, required: true },
     data: {
-      postId: { type: Schema.Types.ObjectId, ref: 'Post' },
-      commentId: { type: Schema.Types.ObjectId, ref: 'Comment' },
-      questionId: { type: Schema.Types.ObjectId, ref: 'Question' },
+      postId: { type: Schema.Types.ObjectId, ref: "Post" },
+      commentId: { type: Schema.Types.ObjectId, ref: "Comment" },
+      questionId: { type: Schema.Types.ObjectId, ref: "Question" },
       answerId: mongoose.Types.ObjectId,
-      userId: { type: Schema.Types.ObjectId, ref: 'User' },
-      groupId: { type: Schema.Types.ObjectId, ref: 'Group' },
-      productId: { type: Schema.Types.ObjectId, ref: 'Product' },
-      orderId: { type: Schema.Types.ObjectId, ref: 'Order' },
+      userId: { type: Schema.Types.ObjectId, ref: "User" },
+      groupId: { type: Schema.Types.ObjectId, ref: "Group" },
+      productId: { type: Schema.Types.ObjectId, ref: "Product" },
+      orderId: { type: Schema.Types.ObjectId, ref: "Order" },
       badgeId: String,
       badgeName: String,
     },
@@ -608,14 +657,14 @@ const NotificationSchema = new Schema<INotification>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // CRITICAL: Notification inbox - Compound index covering unread count and sorted inbox
 // Pattern: { userId: 1, "channels.inApp.read": 1, createdAt: -1 }
 NotificationSchema.index(
-  { userId: 1, 'channels.inApp.read': 1, createdAt: -1 },
-  { name: 'notification_inbox_idx' }
+  { userId: 1, "channels.inApp.read": 1, createdAt: -1 },
+  { name: "notification_inbox_idx" },
 );
 
 // ============================================
@@ -634,7 +683,7 @@ export interface IAMAEvent extends Document {
   description: string;
   scheduledAt: Date;
   endsAt: Date;
-  status: 'scheduled' | 'live' | 'ended' | 'cancelled';
+  status: "scheduled" | "live" | "ended" | "cancelled";
   questions: Array<{
     _id: mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
@@ -658,7 +707,7 @@ export interface IAMAEvent extends Document {
 const AMAEventSchema = new Schema<IAMAEvent>(
   {
     seller: {
-      sellerId: { type: Schema.Types.ObjectId, ref: 'Seller', required: true },
+      sellerId: { type: Schema.Types.ObjectId, ref: "Seller", required: true },
       name: { type: String, required: true },
       avatar: String,
       storeName: { type: String, required: true },
@@ -669,22 +718,24 @@ const AMAEventSchema = new Schema<IAMAEvent>(
     endsAt: { type: Date, required: true },
     status: {
       type: String,
-      enum: ['scheduled', 'live', 'ended', 'cancelled'],
-      default: 'scheduled',
+      enum: ["scheduled", "live", "ended", "cancelled"],
+      default: "scheduled",
     },
-    questions: [{
-      _id: { type: Schema.Types.ObjectId, auto: true },
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-      userName: { type: String, required: true },
-      userAvatar: String,
-      question: { type: String, required: true },
-      upvotes: { type: Number, default: 0 },
-      upvotedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-      isAnswered: { type: Boolean, default: false },
-      answer: String,
-      answeredAt: Date,
-      createdAt: { type: Date, default: Date.now },
-    }],
+    questions: [
+      {
+        _id: { type: Schema.Types.ObjectId, auto: true },
+        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        userName: { type: String, required: true },
+        userAvatar: String,
+        question: { type: String, required: true },
+        upvotes: { type: Number, default: 0 },
+        upvotedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+        isAnswered: { type: Boolean, default: false },
+        answer: String,
+        answeredAt: Date,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     participantCount: { type: Number, default: 0 },
     maxParticipants: Number,
     isPromoted: { type: Boolean, default: false },
@@ -692,20 +743,31 @@ const AMAEventSchema = new Schema<IAMAEvent>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 AMAEventSchema.index({ status: 1, scheduledAt: 1 });
-AMAEventSchema.index({ 'seller.sellerId': 1 });
+AMAEventSchema.index({ "seller.sellerId": 1 });
 
 // ============================================
 // EXPORTS
 // ============================================
 
-export const Post = mongoose.models.Post || mongoose.model<IPost>('Post', PostSchema);
-export const Comment = mongoose.models.Comment || mongoose.model<IComment>('Comment', CommentSchema);
-export const Group = mongoose.models.Group || mongoose.model<IGroup>('Group', GroupSchema);
-export const GroupMember = mongoose.models.GroupMember || mongoose.model<IGroupMember>('GroupMember', GroupMemberSchema);
-export const Question = mongoose.models.Question || mongoose.model<IQuestion>('Question', QuestionSchema);
-export const Notification = mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
-export const AMAEvent = mongoose.models.AMAEvent || mongoose.model<IAMAEvent>('AMAEvent', AMAEventSchema);
+export const Post =
+  mongoose.models.Post || mongoose.model<IPost>("Post", PostSchema);
+export const Comment =
+  mongoose.models.Comment || mongoose.model<IComment>("Comment", CommentSchema);
+export const Group =
+  mongoose.models.Group || mongoose.model<IGroup>("Group", GroupSchema);
+export const GroupMember =
+  mongoose.models.GroupMember ||
+  mongoose.model<IGroupMember>("GroupMember", GroupMemberSchema);
+export const Question =
+  mongoose.models.Question ||
+  mongoose.model<IQuestion>("Question", QuestionSchema);
+export const Notification =
+  mongoose.models.Notification ||
+  mongoose.model<INotification>("Notification", NotificationSchema);
+export const AMAEvent =
+  mongoose.models.AMAEvent ||
+  mongoose.model<IAMAEvent>("AMAEvent", AMAEventSchema);

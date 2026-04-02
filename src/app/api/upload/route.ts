@@ -3,6 +3,8 @@ import { verifyToken, extractToken } from '@/lib/auth/middleware';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+
+export const dynamic = "force-dynamic";
 // POST - Upload file
 export async function POST(request: Request) {
   try {

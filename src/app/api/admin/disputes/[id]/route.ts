@@ -6,6 +6,8 @@ import {
   type AuthenticatedRequest,
 } from "@/lib/auth/middleware";
 
+
+export const dynamic = "force-dynamic";
 async function resolveDispute(request: AuthenticatedRequest) {
   try {
     await dbConnect();

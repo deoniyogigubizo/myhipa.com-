@@ -3,6 +3,8 @@ import connectDB from '@/lib/database/mongodb';
 import { AuditLog } from '@/lib/database/schemas';
 import { verifyToken, extractToken } from '@/lib/auth/middleware';
 
+
+export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const token = extractToken(request as any);

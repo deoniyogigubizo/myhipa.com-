@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { verifyToken, extractToken } from "@/lib/auth/middleware";
 
+
+export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";

@@ -5,6 +5,8 @@ import {
 } from "@/lib/auth/middleware";
 import { getPermissions } from "@/lib/auth/permissions";
 
+
+export const dynamic = "force-dynamic";
 // In-memory roles store (in production, persist to DB)
 const customRoles = [
   {

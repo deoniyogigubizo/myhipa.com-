@@ -1,34 +1,8 @@
 import { MetadataRoute } from "next";
-import connectDB from "@/lib/database/mongodb";
-import { Product, Seller } from "@/lib/database/schemas";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://myhipa.com";
 
-// Maximum URLs per sitemap (Google limit is 50,000)
-const MAX_URLS_PER_SITEMAP = 45000;
-
-export async function generateSitemaps() {
-  // For large sites: generates multiple sitemap chunks
-  // e.g., /sitemap.xml, /sitemap-1.xml, /sitemap-2.xml
-  await connectDB();
-
-  const productCount = await Product.countDocuments({ status: "active" });
-  const sellerCount = await Seller.countDocuments({ status: "active" });
-  const totalDynamic = productCount + sellerCount;
-
-  const chunks = Math.ceil(totalDynamic / MAX_URLS_PER_SITEMAP);
-  const sitemaps = Array.from({ length: Math.max(1, chunks) }, (_, i) => ({
-    id: i,
-  }));
-
-  return sitemaps;
-}
-
-export default async function sitemap({
-  id,
-}: { id?: number } = {}): Promise<MetadataRoute.Sitemap> {
-  await connectDB();
-
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
@@ -128,67 +102,50 @@ export default async function sitemap({
   }));
 
   // ============================================
-  // DYNAMIC PAGES: Products
+  // DYNAMIC PAGES (best-effort, skipped if DB unavailable)
   // ============================================
-  let productPages: MetadataRoute.Sitemap = [];
+  let dynamicPages: MetadataRoute.Sitemap = [];
 
   try {
-    const skip = (id ?? 0) * MAX_URLS_PER_SITEMAP;
+    const connectDB = (await import("@/lib/database/mongodb")).default;
+    const { Product, Seller } = await import("@/lib/database/schemas");
+
+    await connectDB();
 
     const products = await Product.find({ status: "active" })
       .select("slug updatedAt createdAt")
       .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(MAX_URLS_PER_SITEMAP)
+      .limit(10000)
       .lean();
 
-    productPages = products.map((product) => ({
+    const productPages = products.map((product) => ({
       url: `${BASE_URL}/product/${product.slug}`,
       lastModified: product.updatedAt || product.createdAt || now,
       changeFrequency: "weekly" as const,
       priority: 0.6,
     }));
-  } catch (error) {
-    console.error("Sitemap: Failed to fetch products", error);
-  }
 
-  // ============================================
-  // DYNAMIC PAGES: Stores (Sellers)
-  // ============================================
-  let storePages: MetadataRoute.Sitemap = [];
-
-  try {
     const sellers = await Seller.find({ status: "active" })
       .select("store.slug updatedAt createdAt")
       .sort({ updatedAt: -1 })
       .limit(10000)
       .lean();
 
-    storePages = sellers
-      .filter((s) => s.store?.slug)
-      .map((seller) => ({
+    const storePages = sellers
+      .filter((s: any) => s.store?.slug)
+      .map((seller: any) => ({
         url: `${BASE_URL}/store/${seller.store.slug}`,
         lastModified: seller.updatedAt || seller.createdAt || now,
         changeFrequency: "weekly" as const,
         priority: 0.5,
       }));
+
+    dynamicPages = [...productPages, ...storePages];
   } catch (error) {
-    console.error("Sitemap: Failed to fetch sellers", error);
+    console.error("Sitemap: Failed to fetch dynamic pages", error);
   }
 
-  // ============================================
-  // COMBINE ALL ENTRIES
-  // ============================================
-  const allEntries = [
-    ...staticPages,
-    ...categoryPages,
-    ...productPages,
-    ...storePages,
-  ];
-
-  console.log(
-    `Sitemap generated: ${allEntries.length} URLs (products: ${productPages.length}, stores: ${storePages.length})`,
-  );
+  const allEntries = [...staticPages, ...categoryPages, ...dynamicPages];
 
   return allEntries;
 }

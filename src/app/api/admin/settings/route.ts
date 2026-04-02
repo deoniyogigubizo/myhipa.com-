@@ -4,6 +4,8 @@ import {
   type AuthenticatedRequest,
 } from "@/lib/auth/middleware";
 
+
+export const dynamic = "force-dynamic";
 const platformSettings = {
   general: {
     platformName: "myHipa",

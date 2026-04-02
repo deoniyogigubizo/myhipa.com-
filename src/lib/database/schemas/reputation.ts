@@ -1,16 +1,16 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 // ============================================
 // BADGE DEFINITIONS
 // ============================================
 
-export type BadgeCategory = 
-  | 'engagement'      // Likes, comments, shares
-  | 'sales'           // Purchase-related badges
-  | 'contribution'    // Community contributions
-  | 'trust'           // Verification, KYC
-  | 'special'         // Limited/seasonal badges
-  | 'milestone';      // Streaks & counts
+export type BadgeCategory =
+  | "engagement" // Likes, comments, shares
+  | "sales" // Purchase-related badges
+  | "contribution" // Community contributions
+  | "trust" // Verification, KYC
+  | "special" // Limited/seasonal badges
+  | "milestone"; // Streaks & counts
 
 export interface IBadgeDefinition extends Document {
   _id: mongoose.Types.ObjectId;
@@ -20,10 +20,20 @@ export interface IBadgeDefinition extends Document {
   icon: string;
   category: BadgeCategory;
   points: number;
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+  tier: "bronze" | "silver" | "gold" | "platinum" | "diamond";
   criteria: {
-    type: 'points' | 'purchases' | 'sales' | 'reviews' | 'questions' | 'answers' | 'posts' | 'followers' | 'streak' | 'referrals';
-    operator: 'gte' | 'eq' | 'lte';
+    type:
+      | "points"
+      | "purchases"
+      | "sales"
+      | "reviews"
+      | "questions"
+      | "answers"
+      | "posts"
+      | "followers"
+      | "streak"
+      | "referrals";
+    operator: "gte" | "eq" | "lte";
     value: number;
   };
   rarity: number; // 0-100, lower = more rare
@@ -40,18 +50,39 @@ const BadgeDefinitionSchema = new Schema<IBadgeDefinition>(
     icon: { type: String, required: true },
     category: {
       type: String,
-      enum: ['engagement', 'sales', 'contribution', 'trust', 'special', 'milestone'],
+      enum: [
+        "engagement",
+        "sales",
+        "contribution",
+        "trust",
+        "special",
+        "milestone",
+      ],
       required: true,
     },
     points: { type: Number, default: 0 },
     tier: {
       type: String,
-      enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond'],
-      default: 'bronze',
+      enum: ["bronze", "silver", "gold", "platinum", "diamond"],
+      default: "bronze",
     },
     criteria: {
-      type: { type: String, enum: ['points', 'purchases', 'sales', 'reviews', 'questions', 'answers', 'posts', 'followers', 'streak', 'referrals'] },
-      operator: { type: String, enum: ['gte', 'eq', 'lte'] },
+      type: {
+        type: String,
+        enum: [
+          "points",
+          "purchases",
+          "sales",
+          "reviews",
+          "questions",
+          "answers",
+          "posts",
+          "followers",
+          "streak",
+          "referrals",
+        ],
+      },
+      operator: { type: String, enum: ["gte", "eq", "lte"] },
       value: { type: Number },
     },
     rarity: { type: Number, default: 50, min: 0, max: 100 },
@@ -60,19 +91,19 @@ const BadgeDefinitionSchema = new Schema<IBadgeDefinition>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // ============================================
 // USER REPUTATION
 // ============================================
 
-export type UserLevel = 
-  | 'newcomer'           // 0-49 points
-  | 'active_member'      // 50-199 points
-  | 'trusted_contributor' // 200-499 points
-  | 'community_leader'   // 500-999 points
-  | 'hipa_pro';          // 1000+ points
+export type UserLevel =
+  | "newcomer" // 0-49 points
+  | "active_member" // 50-199 points
+  | "trusted_contributor" // 200-499 points
+  | "community_leader" // 500-999 points
+  | "hipa_pro"; // 1000+ points
 
 export interface IUserReputation extends Document {
   _id: mongoose.Types.ObjectId;
@@ -87,7 +118,7 @@ export interface IUserReputation extends Document {
   badges: Array<{
     badgeId: string;
     earnedAt: Date;
-    earnedFrom: 'auto' | 'manual';
+    earnedFrom: "auto" | "manual";
   }>;
   stats: {
     totalPosts: number;
@@ -123,23 +154,36 @@ export interface IUserReputation extends Document {
 
 const UserReputationSchema = new Schema<IUserReputation>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
     points: { type: Number, default: 0 },
     level: {
       type: String,
-      enum: ['newcomer', 'active_member', 'trusted_contributor', 'community_leader', 'hipa_pro'],
-      default: 'newcomer',
+      enum: [
+        "newcomer",
+        "active_member",
+        "trusted_contributor",
+        "community_leader",
+        "hipa_pro",
+      ],
+      default: "newcomer",
     },
     streak: {
       current: { type: Number, default: 0 },
       longest: { type: Number, default: 0 },
       lastActivityAt: { type: Date, default: Date.now },
     },
-    badges: [{
-      badgeId: { type: String, required: true },
-      earnedAt: { type: Date, default: Date.now },
-      earnedFrom: { type: String, enum: ['auto', 'manual'], default: 'auto' },
-    }],
+    badges: [
+      {
+        badgeId: { type: String, required: true },
+        earnedAt: { type: Date, default: Date.now },
+        earnedFrom: { type: String, enum: ["auto", "manual"], default: "auto" },
+      },
+    ],
     stats: {
       totalPosts: { type: Number, default: 0 },
       totalComments: { type: Number, default: 0 },
@@ -154,18 +198,22 @@ const UserReputationSchema = new Schema<IUserReputation>(
       followingCount: { type: Number, default: 0 },
       referralCount: { type: Number, default: 0 },
     },
-    pointsHistory: [{
-      points: { type: Number, required: true },
-      action: { type: String, required: true },
-      description: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
-    achievements: [{
-      achievementId: String,
-      unlockedAt: { type: Date, default: Date.now },
-      progress: { type: Number, default: 0 },
-      target: { type: Number },
-    }],
+    pointsHistory: [
+      {
+        points: { type: Number, required: true },
+        action: { type: String, required: true },
+        description: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    achievements: [
+      {
+        achievementId: String,
+        unlockedAt: { type: Date, default: Date.now },
+        progress: { type: Number, default: 0 },
+        target: { type: Number },
+      },
+    ],
     weeklyRank: { type: Number, default: 0 },
     monthlyRank: { type: Number, default: 0 },
     allTimeRank: { type: Number, default: 0 },
@@ -173,32 +221,45 @@ const UserReputationSchema = new Schema<IUserReputation>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-UserReputationSchema.index({ userId: 1 }, { unique: true });
+// Index removed - unique is already defined in the field
 UserReputationSchema.index({ points: -1 });
 UserReputationSchema.index({ level: 1 });
-UserReputationSchema.index({ 'streak.current': -1 });
+UserReputationSchema.index({ "streak.current": -1 });
 
 // ============================================
 // MODERATION REPORT
 // ============================================
 
-export type ReportType = 'post' | 'comment' | 'question' | 'answer' | 'user' | 'product' | 'seller' | 'group';
-export type ReportReason = 
-  | 'spam'
-  | 'harassment'
-  | 'inappropriate_content'
-  | 'misinformation'
-  | 'scam_fraud'
-  | 'fake_review'
-  | 'price_gouging'
-  | 'prohibited_item'
-  | 'intellectual_property'
-  | 'other';
+export type ReportType =
+  | "post"
+  | "comment"
+  | "question"
+  | "answer"
+  | "user"
+  | "product"
+  | "seller"
+  | "group";
+export type ReportReason =
+  | "spam"
+  | "harassment"
+  | "inappropriate_content"
+  | "misinformation"
+  | "scam_fraud"
+  | "fake_review"
+  | "price_gouging"
+  | "prohibited_item"
+  | "intellectual_property"
+  | "other";
 
-export type ReportStatus = 'pending' | 'under_review' | 'resolved' | 'dismissed' | 'escalated';
+export type ReportStatus =
+  | "pending"
+  | "under_review"
+  | "resolved"
+  | "dismissed"
+  | "escalated";
 
 export interface IModerationReport extends Document {
   _id: mongoose.Types.ObjectId;
@@ -213,15 +274,15 @@ export interface IModerationReport extends Document {
   reason: ReportReason;
   description: string;
   evidence?: Array<{
-    type: 'image' | 'video' | 'link';
+    type: "image" | "video" | "link";
     url: string;
     description?: string;
   }>;
   status: ReportStatus;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   assignedTo?: mongoose.Types.ObjectId;
   resolution?: {
-    action: 'deleted' | 'warned' | 'suspended' | 'banned' | 'no_action';
+    action: "deleted" | "warned" | "suspended" | "banned" | "no_action";
     notes: string;
     resolvedBy: mongoose.Types.ObjectId;
     resolvedAt: Date;
@@ -238,55 +299,82 @@ const ModerationReportSchema = new Schema<IModerationReport>(
   {
     reportId: { type: String, required: true, unique: true },
     reporter: {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
       name: { type: String, required: true },
       email: { type: String, required: true },
     },
     type: {
       type: String,
-      enum: ['post', 'comment', 'question', 'answer', 'user', 'product', 'seller', 'group'],
+      enum: [
+        "post",
+        "comment",
+        "question",
+        "answer",
+        "user",
+        "product",
+        "seller",
+        "group",
+      ],
       required: true,
     },
     targetId: { type: Schema.Types.ObjectId, required: true },
     reason: {
       type: String,
-      enum: ['spam', 'harassment', 'inappropriate_content', 'misinformation', 'scam_fraud', 'fake_review', 'price_gouging', 'prohibited_item', 'intellectual_property', 'other'],
+      enum: [
+        "spam",
+        "harassment",
+        "inappropriate_content",
+        "misinformation",
+        "scam_fraud",
+        "fake_review",
+        "price_gouging",
+        "prohibited_item",
+        "intellectual_property",
+        "other",
+      ],
       required: true,
     },
     description: { type: String, required: true },
-    evidence: [{
-      type: { type: String, enum: ['image', 'video', 'link'] },
-      url: String,
-      description: String,
-    }],
+    evidence: [
+      {
+        type: { type: String, enum: ["image", "video", "link"] },
+        url: String,
+        description: String,
+      },
+    ],
     status: {
       type: String,
-      enum: ['pending', 'under_review', 'resolved', 'dismissed', 'escalated'],
-      default: 'pending',
+      enum: ["pending", "under_review", "resolved", "dismissed", "escalated"],
+      default: "pending",
     },
     severity: {
       type: String,
-      enum: ['low', 'medium', 'high', 'critical'],
-      default: 'medium',
+      enum: ["low", "medium", "high", "critical"],
+      default: "medium",
     },
-    assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
+    assignedTo: { type: Schema.Types.ObjectId, ref: "User" },
     resolution: {
-      action: { type: String, enum: ['deleted', 'warned', 'suspended', 'banned', 'no_action'] },
+      action: {
+        type: String,
+        enum: ["deleted", "warned", "suspended", "banned", "no_action"],
+      },
       notes: String,
-      resolvedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      resolvedBy: { type: Schema.Types.ObjectId, ref: "User" },
       resolvedAt: { type: Date },
     },
-    aiFlags: [{
-      flag: String,
-      confidence: { type: Number, min: 0, max: 1 },
-    }],
+    aiFlags: [
+      {
+        flag: String,
+        confidence: { type: Number, min: 0, max: 1 },
+      },
+    ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-ModerationReportSchema.index({ reportId: 1 }, { unique: true });
+// Index removed - unique is already defined in the field
 ModerationReportSchema.index({ status: 1, createdAt: -1 });
 ModerationReportSchema.index({ targetId: 1, type: 1 });
 
@@ -300,7 +388,7 @@ export interface IUserStrike extends Document {
   strikeNumber: number;
   reason: string;
   description: string;
-  penalty: 'warning' | 'suspension' | 'ban';
+  penalty: "warning" | "suspension" | "ban";
   duration?: number; // days
   expiresAt?: Date;
   issuedBy: mongoose.Types.ObjectId;
@@ -312,24 +400,24 @@ export interface IUserStrike extends Document {
 
 const UserStrikeSchema = new Schema<IUserStrike>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     strikeNumber: { type: Number, required: true },
     reason: { type: String, required: true },
     description: String,
     penalty: {
       type: String,
-      enum: ['warning', 'suspension', 'ban'],
+      enum: ["warning", "suspension", "ban"],
       required: true,
     },
     duration: Number,
-    issuedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    relatedReportId: { type: Schema.Types.ObjectId, ref: 'ModerationReport' },
+    issuedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    relatedReportId: { type: Schema.Types.ObjectId, ref: "ModerationReport" },
     isActive: { type: Boolean, default: true },
     expiresAtDate: Date,
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 UserStrikeSchema.index({ userId: 1, isActive: 1 });
@@ -341,18 +429,18 @@ UserStrikeSchema.index({ expiresAtDate: 1 });
 
 export interface IContentFlag extends Document {
   _id: mongoose.Types.ObjectId;
-  contentType: 'post' | 'comment' | 'question' | 'answer' | 'review';
+  contentType: "post" | "comment" | "question" | "answer" | "review";
   contentId: mongoose.Types.ObjectId;
   flags: Array<{
     type: string;
     confidence: number;
     triggeredAt: Date;
   }>;
-  autoAction: 'approve' | 'queue' | 'reject';
+  autoAction: "approve" | "queue" | "reject";
   manualReviewRequired: boolean;
   reviewedBy?: mongoose.Types.ObjectId;
   reviewedAt?: Date;
-  finalDecision?: 'approve' | 'reject' | 'escalate';
+  finalDecision?: "approve" | "reject" | "escalate";
   notes?: string;
   createdAt: Date;
 }
@@ -361,32 +449,34 @@ const ContentFlagSchema = new Schema<IContentFlag>(
   {
     contentType: {
       type: String,
-      enum: ['post', 'comment', 'question', 'answer', 'review'],
+      enum: ["post", "comment", "question", "answer", "review"],
       required: true,
     },
     contentId: { type: Schema.Types.ObjectId, required: true },
-    flags: [{
-      type: { type: String, required: true },
-      confidence: { type: Number, min: 0, max: 1 },
-      triggeredAt: { type: Date, default: Date.now },
-    }],
+    flags: [
+      {
+        type: { type: String, required: true },
+        confidence: { type: Number, min: 0, max: 1 },
+        triggeredAt: { type: Date, default: Date.now },
+      },
+    ],
     autoAction: {
       type: String,
-      enum: ['approve', 'queue', 'reject'],
-      default: 'queue',
+      enum: ["approve", "queue", "reject"],
+      default: "queue",
     },
     manualReviewRequired: { type: Boolean, default: false },
-    reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
     reviewedAt: Date,
     finalDecision: {
       type: String,
-      enum: ['approve', 'reject', 'escalate'],
+      enum: ["approve", "reject", "escalate"],
     },
     notes: String,
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 ContentFlagSchema.index({ contentType: 1, contentId: 1 });
@@ -398,7 +488,7 @@ ContentFlagSchema.index({ autoAction: 1, manualReviewRequired: 1 });
 
 export interface ILeaderboardEntry extends Document {
   _id: mongoose.Types.ObjectId;
-  period: 'weekly' | 'monthly' | 'all_time';
+  period: "weekly" | "monthly" | "all_time";
   userId: mongoose.Types.ObjectId;
   userName: string;
   userAvatar?: string;
@@ -418,15 +508,21 @@ const LeaderboardEntrySchema = new Schema<ILeaderboardEntry>(
   {
     period: {
       type: String,
-      enum: ['weekly', 'monthly', 'all_time'],
+      enum: ["weekly", "monthly", "all_time"],
       required: true,
     },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     userName: { type: String, required: true },
     userAvatar: String,
     userLevel: {
       type: String,
-      enum: ['newcomer', 'active_member', 'trusted_contributor', 'community_leader', 'hipa_pro'],
+      enum: [
+        "newcomer",
+        "active_member",
+        "trusted_contributor",
+        "community_leader",
+        "hipa_pro",
+      ],
     },
     points: { type: Number, required: true },
     rank: { type: Number, required: true },
@@ -440,7 +536,7 @@ const LeaderboardEntrySchema = new Schema<ILeaderboardEntry>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 LeaderboardEntrySchema.index({ period: 1, rank: 1 });
@@ -450,12 +546,24 @@ LeaderboardEntrySchema.index({ period: 1, calculatedAt: -1 });
 // EXPORTS
 // ============================================
 
-export const BadgeDefinition = mongoose.models.BadgeDefinition || mongoose.model<IBadgeDefinition>('BadgeDefinition', BadgeDefinitionSchema);
-export const UserReputation = mongoose.models.UserReputation || mongoose.model<IUserReputation>('UserReputation', UserReputationSchema);
-export const ModerationReport = mongoose.models.ModerationReport || mongoose.model<IModerationReport>('ModerationReport', ModerationReportSchema);
-export const UserStrike = mongoose.models.UserStrike || mongoose.model<IUserStrike>('UserStrike', UserStrikeSchema);
-export const ContentFlag = mongoose.models.ContentFlag || mongoose.model<IContentFlag>('ContentFlag', ContentFlagSchema);
-export const LeaderboardEntry = mongoose.models.LeaderboardEntry || mongoose.model<ILeaderboardEntry>('LeaderboardEntry', LeaderboardEntrySchema);
+export const BadgeDefinition =
+  mongoose.models.BadgeDefinition ||
+  mongoose.model<IBadgeDefinition>("BadgeDefinition", BadgeDefinitionSchema);
+export const UserReputation =
+  mongoose.models.UserReputation ||
+  mongoose.model<IUserReputation>("UserReputation", UserReputationSchema);
+export const ModerationReport =
+  mongoose.models.ModerationReport ||
+  mongoose.model<IModerationReport>("ModerationReport", ModerationReportSchema);
+export const UserStrike =
+  mongoose.models.UserStrike ||
+  mongoose.model<IUserStrike>("UserStrike", UserStrikeSchema);
+export const ContentFlag =
+  mongoose.models.ContentFlag ||
+  mongoose.model<IContentFlag>("ContentFlag", ContentFlagSchema);
+export const LeaderboardEntry =
+  mongoose.models.LeaderboardEntry ||
+  mongoose.model<ILeaderboardEntry>("LeaderboardEntry", LeaderboardEntrySchema);
 
 // Schema exports already handled above
 // export const BadgeDefinitionSchema = BadgeDefinition.schema;

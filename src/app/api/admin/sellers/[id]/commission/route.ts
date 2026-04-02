@@ -6,6 +6,8 @@ import {
   type AuthenticatedRequest,
 } from "@/lib/auth/middleware";
 
+
+export const dynamic = "force-dynamic";
 async function updateSellerCommission(request: AuthenticatedRequest) {
   try {
     await dbConnect();

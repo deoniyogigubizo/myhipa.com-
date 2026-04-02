@@ -12,6 +12,8 @@ import {
   type AuthenticatedRequest,
 } from "@/lib/auth/middleware";
 
+
+export const dynamic = "force-dynamic";
 async function getDashboardStats(request: AuthenticatedRequest) {
   try {
     await dbConnect();

@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/database/mongodb';
 import { User } from '@/lib/database/schemas';
 
+
+export const dynamic = "force-dynamic";
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export async function PUT(request: NextRequest) {

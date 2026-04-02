@@ -3,6 +3,8 @@ import connectDB from '@/lib/database/mongodb'
 import { User } from '@/lib/database/schemas'
 import { verifyToken, extractToken } from '@/lib/auth/middleware'
 
+
+export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     await connectDB()

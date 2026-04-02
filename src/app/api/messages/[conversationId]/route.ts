@@ -10,6 +10,8 @@ import {
 } from "@/lib/encryption";
 import { AuditLog } from "@/lib/database/schemas";
 
+
+export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";

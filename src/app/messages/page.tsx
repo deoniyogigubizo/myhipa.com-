@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -92,7 +93,7 @@ interface Message {
   createdAt: string;
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const { user, isAuthenticated, isHydrated } = useAuthStore();
   const searchParams = useSearchParams();
   const storeSlug = searchParams.get("store");
@@ -3359,5 +3360,19 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+        </div>
+      }
+    >
+      <MessagesPageContent />
+    </Suspense>
   );
 }

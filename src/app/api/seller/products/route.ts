@@ -4,6 +4,8 @@ import connectDB from '@/lib/database/mongodb';
 import { Product, Seller, AuditLog } from '@/lib/database/schemas';
 import { withSellerAuth } from '@/lib/auth/middleware';
 
+
+export const dynamic = "force-dynamic";
 export const GET = withSellerAuth(async (request: NextRequest) => {
   try {
     await connectDB();

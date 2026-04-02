@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/layout/Navbar";
@@ -22,8 +22,12 @@ export const metadata: Metadata = {
     icon: "/myhipa-logo.svg",
     apple: "/myhipa-logo.svg",
   },
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
