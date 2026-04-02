@@ -19,8 +19,9 @@ export const metadata: Metadata = {
     "online shopping",
   ],
   icons: {
-    icon: "/myhipa-logo.svg",
-    apple: "/myhipa-logo.svg",
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
   },
 };
 
