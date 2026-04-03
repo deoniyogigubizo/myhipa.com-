@@ -1,9 +1,10 @@
-import { ObjectId } from 'mongodb';
-import connectDB from '@/lib/database/mongodb';
-import { ChatbotSession } from '@/lib/database/schemas/ai.schema';
-import { Seller } from '@/lib/database/schemas/seller.schema';
-import { Product } from '@/lib/database/schemas/product.schema';
-import type { IChatbotContext, IChatbotMessage } from '@/types/ai';
+import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+import connectDB from "@/lib/database/mongodb";
+import { ChatbotSession } from "@/lib/database/schemas/ai.schema";
+import { Seller } from "@/lib/database/schemas/seller.schema";
+import { Product } from "@/lib/database/schemas/product.schema";
+import type { IChatbotContext, IChatbotMessage } from "@/types/ai";
 
 // ============================================
 // AI CHATBOT SERVICE (Part 10)
@@ -16,7 +17,7 @@ export async function generateChatbotResponse(
   storeId: ObjectId,
   userMessage: string,
   userId?: ObjectId | null,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<{ response: string; sessionId: string }> {
   await connectDB();
 
@@ -24,41 +25,41 @@ export async function generateChatbotResponse(
   const storeContext = await getStoreContext(storeId);
 
   if (!storeContext) {
-    return { 
-      response: "Sorry, I couldn't find information about this store.", 
-      sessionId: sessionId || '' 
+    return {
+      response: "Sorry, I couldn't find information about this store.",
+      sessionId: sessionId || "",
     };
   }
 
   // Get or create session
   const chatSession = await getOrCreateSession(
-    storeId, 
-    userId, 
-    sessionId || `session_${Date.now()}`
+    storeId,
+    userId,
+    sessionId || `session_${Date.now()}`,
   );
 
   // Build conversation history
   const recentMessages = chatSession.messages.slice(-10);
   const conversationHistory = recentMessages
-    .map(m => `${m.role}: ${m.content}`)
-    .join('\n');
+    .map((m) => `${m.role}: ${m.content}`)
+    .join("\n");
 
   // Generate response using LLM
   const response = await generateLLMResponse(
     userMessage,
     storeContext,
-    conversationHistory
+    conversationHistory,
   );
 
   // Save message to session
   await saveChatMessage(chatSession._id!, {
-    role: 'user',
-    content: userMessage
+    role: "user",
+    content: userMessage,
   });
 
   await saveChatMessage(chatSession._id!, {
-    role: 'assistant',
-    content: response
+    role: "assistant",
+    content: response,
   });
 
   return { response, sessionId: chatSession.sessionId };
@@ -67,38 +68,38 @@ export async function generateChatbotResponse(
 /**
  * Get store context for chatbot
  */
-async function getStoreContext(storeId: ObjectId): Promise<IChatbotContext | null> {
-  const seller = await Seller.findById(storeId)
-    .select('store policies')
-    .lean();
+async function getStoreContext(
+  storeId: ObjectId,
+): Promise<IChatbotContext | null> {
+  const seller = await Seller.findById(storeId).select("store policies").lean();
 
   if (!seller) return null;
 
   // Get top products
   const products = await Product.find({
-    sellerId: storeId,
-    status: 'active',
-    'inventory.totalStock': { $gt: 0 }
+    sellerId: new mongoose.Types.ObjectId(storeId),
+    status: "active",
+    "inventory.totalStock": { $gt: 0 },
   })
-  .sort({ 'stats.views': -1 })
-  .limit(10)
-  .select('title pricing.base inventory.totalStock')
-  .lean();
+    .sort({ "stats.views": -1 })
+    .limit(10)
+    .select("title pricing.base inventory.totalStock")
+    .lean();
 
   return {
     storeId: seller._id,
-    storeName: seller.store?.name || 'Store',
+    storeName: seller.store?.name || "Store",
     policies: {
-      shipping: seller.policies?.shipping || 'Standard shipping',
-      returns: seller.policies?.returns || 'No returns',
-      paymentMethods: ['Mobile Money', 'Card', 'Cash on Delivery']
+      shipping: seller.policies?.shipping || "Standard shipping",
+      returns: seller.policies?.returns || "No returns",
+      paymentMethods: ["Mobile Money", "Card", "Cash on Delivery"],
     },
-    topProducts: products.map(p => ({
+    topProducts: products.map((p) => ({
       id: p._id,
       name: p.title,
       price: p.pricing?.base || 0,
-      stock: p.inventory?.totalStock || 0
-    }))
+      stock: p.inventory?.totalStock || 0,
+    })),
   };
 }
 
@@ -108,7 +109,7 @@ async function getStoreContext(storeId: ObjectId): Promise<IChatbotContext | nul
 async function getOrCreateSession(
   storeId: ObjectId,
   userId?: ObjectId | null,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<{ _id: ObjectId; sessionId: string; messages: IChatbotMessage[] }> {
   let session;
 
@@ -126,11 +127,15 @@ async function getOrCreateSession(
       sessionId: sessionId || `session_${Date.now()}`,
       storeId,
       messages: [],
-      resolved: false
+      resolved: false,
     });
   }
 
-  return session as { _id: ObjectId; sessionId: string; messages: IChatbotMessage[] };
+  return session as {
+    _id: ObjectId;
+    sessionId: string;
+    messages: IChatbotMessage[];
+  };
 }
 
 /**
@@ -138,19 +143,19 @@ async function getOrCreateSession(
  */
 async function saveChatMessage(
   sessionId: ObjectId,
-  message: { role: 'user' | 'assistant'; content: string }
+  message: { role: "user" | "assistant"; content: string },
 ): Promise<void> {
   await ChatbotSession.updateOne(
-    { _id: sessionId },
+    { _id: new mongoose.Types.ObjectId(sessionId) },
     {
       $push: {
         messages: {
           role: message.role,
           content: message.content,
-          ts: new Date()
-        }
-      }
-    }
+          ts: new Date(),
+        },
+      },
+    },
   );
 }
 
@@ -160,27 +165,34 @@ async function saveChatMessage(
 async function generateLLMResponse(
   userMessage: string,
   storeContext: IChatbotContext,
-  conversationHistory: string
+  conversationHistory: string,
 ): Promise<string> {
   const systemPrompt = buildChatbotSystemPrompt(storeContext);
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
-          { role: 'system', content: systemPrompt },
-          ...(conversationHistory ? [{ role: 'system', content: `Recent conversation:\n${conversationHistory}` }] : []),
-          { role: 'user', content: userMessage }
+          { role: "system", content: systemPrompt },
+          ...(conversationHistory
+            ? [
+                {
+                  role: "system",
+                  content: `Recent conversation:\n${conversationHistory}`,
+                },
+              ]
+            : []),
+          { role: "user", content: userMessage },
         ],
         temperature: 0.7,
-        max_tokens: 500
-      })
+        max_tokens: 500,
+      }),
     });
 
     if (!response.ok) {
@@ -188,9 +200,12 @@ async function generateLLMResponse(
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || "I'm not sure how to answer that. Let me connect you with the seller.";
+    return (
+      data.choices[0]?.message?.content ||
+      "I'm not sure how to answer that. Let me connect you with the seller."
+    );
   } catch (error) {
-    console.error('Error generating chatbot response:', error);
+    console.error("Error generating chatbot response:", error);
     return "I'm having trouble processing your request. Please try again or contact the seller directly.";
   }
 }
@@ -201,14 +216,17 @@ async function generateLLMResponse(
 function buildChatbotSystemPrompt(context: IChatbotContext): string {
   const productsSummary = context.topProducts
     .slice(0, 5)
-    .map(p => `- ${p.name}: ${p.price} RWF (${p.stock > 0 ? 'In Stock' : 'Out of Stock'})`)
-    .join('\n');
+    .map(
+      (p) =>
+        `- ${p.name}: ${p.price} RWF (${p.stock > 0 ? "In Stock" : "Out of Stock"})`,
+    )
+    .join("\n");
 
   return `You are the customer service assistant for ${context.storeName}.
 Store policies:
 - Shipping: ${context.policies.shipping}
 - Returns: ${context.policies.returns}
-- Payment methods: ${context.policies.paymentMethods.join(', ')}
+- Payment methods: ${context.policies.paymentMethods.join(", ")}
 
 Current popular products:
 ${productsSummary}
@@ -227,12 +245,12 @@ Guidelines:
  */
 export async function getChatHistory(
   sessionId: string,
-  storeId: ObjectId
+  storeId: ObjectId,
 ): Promise<IChatbotMessage[]> {
   await connectDB();
 
   const session = await ChatbotSession.findOne({ sessionId, storeId })
-    .select('messages')
+    .select("messages")
     .lean();
 
   return session?.messages || [];
@@ -244,10 +262,7 @@ export async function getChatHistory(
 export async function resolveChatSession(sessionId: string): Promise<void> {
   await connectDB();
 
-  await ChatbotSession.updateOne(
-    { sessionId },
-    { $set: { resolved: true } }
-  );
+  await ChatbotSession.updateOne({ sessionId }, { $set: { resolved: true } });
 }
 
 /**
@@ -255,11 +270,11 @@ export async function resolveChatSession(sessionId: string): Promise<void> {
  */
 export async function generateSellerAssistantResponse(
   sellerId: ObjectId,
-  userMessage: string
+  userMessage: string,
 ): Promise<string> {
   // Get seller context
   const seller = await Seller.findById(sellerId)
-    .select('store stats policies')
+    .select("store stats policies")
     .lean();
 
   if (!seller) {
@@ -281,27 +296,30 @@ You can help with:
 Be concise and actionable.`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
         ],
         temperature: 0.7,
-        max_tokens: 500
-      })
+        max_tokens: 500,
+      }),
     });
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || "I'm having trouble processing your request.";
+    return (
+      data.choices[0]?.message?.content ||
+      "I'm having trouble processing your request."
+    );
   } catch (error) {
-    console.error('Error generating seller assistant response:', error);
+    console.error("Error generating seller assistant response:", error);
     return "I'm having trouble processing your request. Please try again.";
   }
 }

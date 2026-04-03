@@ -11,6 +11,9 @@ const nextConfig = {
     optimizePackageImports: ["lucide-react", "@tanstack/react-query"],
   },
 
+  // Turbopack configuration
+  turbopack: {},
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -68,12 +71,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  },
-
-  // Internationalization
-  i18n: {
-    locales: ["en", "rw", "fr"],
-    defaultLocale: "en",
   },
 
   // Headers for security and performance
@@ -149,11 +146,6 @@ const nextConfig = {
   // TypeScript
   typescript: {
     ignoreBuildErrors: false,
-  },
-
-  // ESLint
-  eslint: {
-    ignoreDuringBuilds: false,
   },
 
   // Power by Vercel (disable in production if desired)

@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
-
+import { MongoClient } from "mongodb";
 
 export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
+  process.env.MONGODB_URI ||
+  "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
 
 // Cache for database connection
-let cachedConn: mongoose.Connection | null = null;
+let cachedClient: MongoClient | null = null;
 
 async function getDb() {
-  if (cachedConn && cachedConn.readyState === 1) {
-    return cachedConn;
+  if (cachedClient) {
+    return cachedClient.db();
   }
 
-  const opts = {
-    bufferCommands: false,
-  };
-
-  const conn = await mongoose.connect(MONGODB_URI, opts);
-  cachedConn = conn.connection;
-  return cachedConn;
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  cachedClient = client;
+  return client.db();
 }
 
 export async function GET(request: Request) {

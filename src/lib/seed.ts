@@ -1624,7 +1624,6 @@ async function seedDatabase() {
           sunday: null,
         },
         onboardingStep: "completed",
-        status: "active",
       });
 
       sellerIds.push(seller._id as mongoose.Types.ObjectId);

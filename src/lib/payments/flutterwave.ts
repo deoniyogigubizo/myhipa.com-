@@ -1,5 +1,5 @@
-import Flutterwave from 'flutterwave-node-v3'
-import * as crypto from 'crypto'
+import Flutterwave from "flutterwave-node-v3";
+import * as crypto from "crypto";
 
 // ============================================
 // Flutterwave Payment Integration for Escrow
@@ -44,7 +44,7 @@ export class FlutterwaveService {
     if (process.env.FLW_PUBLIC_KEY && process.env.FLW_SECRET_KEY) {
       this.flw = new Flutterwave(
         process.env.FLW_PUBLIC_KEY,
-        process.env.FLW_SECRET_KEY
+        process.env.FLW_SECRET_KEY,
       );
     }
   }
@@ -52,7 +52,9 @@ export class FlutterwaveService {
   // Step 1 of payment: create a payment link for the buyer
   async initiatePayment(params: PaymentRequest): Promise<PaymentResponse> {
     if (!this.flw) {
-      throw new Error('Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.');
+      throw new Error(
+        "Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.",
+      );
     }
 
     const payload = {
@@ -66,39 +68,43 @@ export class FlutterwaveService {
         name: params.name,
       },
       customizations: {
-        title: 'Hipa Marketplace',
+        title: "Hipa Marketplace",
         description: `Order #${params.orderId}`,
-        logo: 'https://hipa.com/logo.png',
+        logo: "https://hipa.com/logo.png",
       },
-      meta: { orderId: params.orderId }
-    }
+      meta: { orderId: params.orderId },
+    };
 
-    const response = await this.flw.Payment.initialize(payload)
+    const response = await this.flw.Payment.initialize(payload);
     return {
       paymentLink: response.data.link,
       txRef: payload.tx_ref,
-    }
+    };
   }
 
   // Step 2: verify the payment after redirect
   async verifyPayment(transactionId: string): Promise<VerifyResponse> {
     if (!this.flw) {
-      throw new Error('Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.');
+      throw new Error(
+        "Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.",
+      );
     }
 
-    const response = await this.flw.Transaction.verify({ id: transactionId })
+    const response = await this.flw.Transaction.verify({ id: transactionId });
     return {
-      verified: response.data.status === 'successful',
+      verified: response.data.status === "successful",
       amount: Math.round(response.data.amount * 100), // back to smallest unit
       currency: response.data.currency,
       txRef: response.data.tx_ref,
-    }
+    };
   }
 
   // Step 3: pay out to seller when escrow releases
   async payoutToSeller(params: PayoutRequest) {
     if (!this.flw) {
-      throw new Error('Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.');
+      throw new Error(
+        "Flutterwave not initialized. Please set FLW_PUBLIC_KEY and FLW_SECRET_KEY environment variables.",
+      );
     }
 
     const payload = {
@@ -110,18 +116,18 @@ export class FlutterwaveService {
       reference: params.reference,
       callback_url: `${process.env.API_URL}/webhooks/flutterwave/payout`,
       debit_currency: params.currency,
-    }
+    };
 
-    const response = await this.flw.Transfer.initiate(payload)
-    return response.data
+    const response = await this.flw.Transfer.initiate(payload);
+    return response.data;
   }
 
   // Verify webhook signature from Flutterwave
   verifyWebhookSignature(signature: string, payload: string): boolean {
     const hash = crypto
-      .createHmac('sha256', process.env.FLW_WEBHOOK_SECRET_HASH!)
+      .createHmac("sha256", process.env.FLW_WEBHOOK_SECRET_HASH!)
       .update(payload)
-      .digest('hex')
-    return hash === signature
+      .digest("hex");
+    return hash === signature;
   }
 }

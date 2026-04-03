@@ -502,7 +502,7 @@ export const OrderSchema = new Schema<IOrder>(
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
-        ret.id = ret._id;
+        (ret as any).id = ret._id;
         delete ret._id;
         delete ret.__v;
         return ret;
@@ -802,7 +802,7 @@ OrderSchema.methods.calculatePricing = function (sellerFeeRate: number) {
 // ============================================
 
 // Generate order number on save
-OrderSchema.pre("save", async function (next) {
+OrderSchema.pre("save", async function (this: any, next: () => void) {
   if (this.isNew && !this.orderNumber) {
     this.orderNumber = await (this.constructor as any).generateOrderNumber();
   }

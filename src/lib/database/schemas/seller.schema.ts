@@ -581,7 +581,7 @@ export const SellerSchema = new Schema<ISeller>(
       virtuals: true,
       transform: function (doc, ret) {
         // Add virtual fields to JSON
-        ret.id = ret._id;
+        (ret as any).id = ret._id;
         delete ret._id;
         delete ret.__v;
         return ret;

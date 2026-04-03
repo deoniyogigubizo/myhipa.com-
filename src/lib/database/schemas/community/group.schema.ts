@@ -252,7 +252,7 @@ export const GroupSchema = new Schema<IGroup>(
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
-        ret.id = ret._id;
+        (ret as any).id = ret._id;
         delete ret._id;
         delete ret.__v;
         return ret;

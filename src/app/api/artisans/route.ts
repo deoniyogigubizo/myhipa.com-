@@ -1,52 +1,51 @@
-import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-
+import { NextResponse } from "next/server";
+import { MongoClient } from "mongodb";
 
 export const dynamic = "force-dynamic";
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa';
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
 
 // Cache for database connection
-let cachedConn: mongoose.Connection | null = null;
+let cachedClient: MongoClient | null = null;
 
 async function getDb() {
-  if (cachedConn && cachedConn.readyState === 1) {
-    return cachedConn;
+  if (cachedClient) {
+    return cachedClient.db();
   }
-  
-  const opts = {
-    bufferCommands: false,
-  };
-  
-  const conn = await mongoose.connect(MONGODB_URI, opts);
-  cachedConn = conn.connection;
-  return cachedConn;
+
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  cachedClient = client;
+  return client.db();
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const region = searchParams.get('region');
-    
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const region = searchParams.get("region");
+
     const db = await getDb();
-    
+
     // Build query for artisan stories (sellers with stories/bio)
     const query: Record<string, unknown> = {
-      kycStatus: 'verified',
+      kycStatus: "verified",
       $or: [
-        { 'store.bio': { $exists: true, $ne: '' } },
-        { 'store.story': { $exists: true, $ne: '' } }
-      ]
+        { "store.bio": { $exists: true, $ne: "" } },
+        { "store.story": { $exists: true, $ne: "" } },
+      ],
     };
-    
+
     // Filter by region if specified
     if (region) {
-      query['store.location'] = { $regex: region, $options: 'i' };
+      query["store.location"] = { $regex: region, $options: "i" };
     }
-    
+
     // Fetch artisan sellers with stories
-    const artisans = await db.collection('sellers')
+    const artisans = await db
+      .collection("sellers")
       .find(query)
       .project({
         _id: 1,
@@ -54,44 +53,44 @@ export async function GET(request: Request) {
         tier: 1,
         stats: 1,
         verifiedAt: 1,
-        createdAt: 1
+        createdAt: 1,
       })
       .limit(limit)
       .toArray();
-    
+
     // If no artisans found, return featured sellers as fallback
     if (artisans.length === 0) {
-      const fallbackSellers = await db.collection('sellers')
-        .find({ kycStatus: 'verified' })
+      const fallbackSellers = await db
+        .collection("sellers")
+        .find({ kycStatus: "verified" })
         .project({
           _id: 1,
           store: 1,
           tier: 1,
           stats: 1,
           verifiedAt: 1,
-          createdAt: 1
+          createdAt: 1,
         })
         .limit(limit)
         .toArray();
-      
+
       return NextResponse.json({
         success: true,
         data: fallbackSellers,
-        count: fallbackSellers.length
+        count: fallbackSellers.length,
       });
     }
-    
+
     return NextResponse.json({
       success: true,
       data: artisans,
-      count: artisans.length
+      count: artisans.length,
     });
-    
   } catch (error) {
-    console.error('Error fetching artisan stories:', error);
+    console.error("Error fetching artisan stories:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch artisan stories' },
-      { status: 500 }
+      { success: false, error: "Failed to fetch artisan stories" },
+      { status: 500 },
     );
   }
 }

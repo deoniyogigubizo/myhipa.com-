@@ -4,6 +4,7 @@ import Providers from "@/components/Providers";
 import Navbar from "@/components/layout/Navbar";
 import SearchSection from "@/components/layout/SearchSection";
 import AppBottomNav from "@/components/layout/AppBottomNav";
+import FloatingActionButtons from "@/components/layout/FloatingActionButtons";
 
 export const metadata: Metadata = {
   title: "myhipa.com - affordable and adorable",
@@ -44,6 +45,7 @@ export default function RootLayout({
           <SearchSection />
           <main className="flex-1">{children}</main>
           <AppBottomNav />
+          <FloatingActionButtons />
         </Providers>
       </body>
     </html>

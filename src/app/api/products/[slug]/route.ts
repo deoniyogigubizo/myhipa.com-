@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-
 export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
+  process.env.MONGODB_URI ||
+  "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
 
 // Cache for database connection
 let cachedConn: mongoose.Connection | null = null;
@@ -16,7 +16,7 @@ async function getDb() {
   }
 
   const opts = {
-    bufferCommands: false,
+    bufferCommands: true,
   };
 
   const conn = await mongoose.connect(MONGODB_URI, opts);
@@ -26,11 +26,11 @@ async function getDb() {
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { searchParams } = new URL(request.url);
-    const slug = params.slug;
+    const { slug } = await params;
 
     const db = await getDb();
 

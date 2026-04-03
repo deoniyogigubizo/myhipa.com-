@@ -37,7 +37,7 @@ async function getDb() {
   }
 
   const opts = {
-    bufferCommands: false,
+    bufferCommands: true,
   };
 
   const conn = await mongoose.connect(MONGODB_URI, opts);

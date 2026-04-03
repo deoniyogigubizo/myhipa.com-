@@ -10,11 +10,11 @@ import {
 } from "@/lib/encryption";
 import { AuditLog } from "@/lib/database/schemas";
 
-
 export const dynamic = "force-dynamic";
 // MongoDB connection
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
+  process.env.MONGODB_URI ||
+  "mongodb+srv://deoniyogisubizo:maiden410@myhipa.qkj7r5a.mongodb.net/hipa";
 
 let cachedConn: mongoose.Connection | null = null;
 
@@ -24,7 +24,7 @@ async function getDb() {
   }
 
   const opts = {
-    bufferCommands: false,
+    bufferCommands: true,
   };
 
   const conn = await mongoose.connect(MONGODB_URI, opts);
@@ -35,9 +35,10 @@ async function getDb() {
 // GET - Get messages for a conversation
 export async function GET(
   request: Request,
-  { params }: { params: { conversationId: string } },
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
+    const { conversationId } = await params;
     const token = extractToken(request as any);
     if (!token) {
       return NextResponse.json(
@@ -54,7 +55,6 @@ export async function GET(
       );
     }
 
-    const { conversationId } = params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
@@ -365,9 +365,10 @@ export async function GET(
 // POST - Send a new message
 export async function POST(
   request: Request,
-  { params }: { params: { conversationId: string } },
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
+    const { conversationId } = await params;
     const token = extractToken(request as any);
     if (!token) {
       return NextResponse.json(
@@ -384,7 +385,6 @@ export async function POST(
       );
     }
 
-    const { conversationId } = params;
     const body = await request.json();
     const {
       content,
@@ -652,9 +652,10 @@ export async function POST(
 // PUT - Edit a message
 export async function PUT(
   request: Request,
-  { params }: { params: { conversationId: string } },
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
+    const { conversationId } = await params;
     const token = extractToken(request as any);
     if (!token) {
       return NextResponse.json(
@@ -671,7 +672,6 @@ export async function PUT(
       );
     }
 
-    const { conversationId } = params;
     const body = await request.json();
     const { messageId, content } = body;
 
@@ -728,9 +728,10 @@ export async function PUT(
 // DELETE - Delete a message (soft delete)
 export async function DELETE(
   request: Request,
-  { params }: { params: { conversationId: string } },
+  { params }: { params: Promise<{ conversationId: string }> },
 ) {
   try {
+    const { conversationId } = await params;
     const token = extractToken(request as any);
     if (!token) {
       return NextResponse.json(
@@ -747,7 +748,6 @@ export async function DELETE(
       );
     }
 
-    const { conversationId } = params;
     const { searchParams } = new URL(request.url);
     const messageId = searchParams.get("messageId");
 
