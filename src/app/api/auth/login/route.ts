@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import connectDB from "@/lib/database/mongodb";
 import { User, AuditLog } from "@/lib/database/schemas";
 
-
 export const dynamic = "force-dynamic";
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -86,16 +85,23 @@ export async function POST(request: NextRequest) {
     const passwordToCheck = user.passwordHash || user.password;
     if (!passwordToCheck) {
       console.log("User has no password hash:", user.email);
+      console.log("Available fields:", Object.keys(user.toObject()));
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        {
+          error:
+            "This account has no password set. Please use social login or reset your password.",
+        },
         { status: 401 },
       );
     }
 
+    console.log("Password hash prefix:", passwordToCheck.substring(0, 10));
     const isPasswordValid = await bcrypt.compare(password, passwordToCheck);
     console.log("Password valid:", isPasswordValid);
     if (!isPasswordValid) {
       console.log("Password mismatch for user:", user.email);
+      console.log("Provided password:", password);
+      console.log("Stored hash prefix:", passwordToCheck.substring(0, 10));
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 },

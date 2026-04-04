@@ -179,7 +179,7 @@ export const GroupSchema = new Schema<IGroup>(
 
     adminId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "Admin ID is required"],
       description: "Group admin user",
     },
@@ -187,7 +187,7 @@ export const GroupSchema = new Schema<IGroup>(
     moderators: [
       {
         type: Schema.Types.ObjectId,
-        ref: "users",
+        ref: "User",
         description: "Array of moderator user IDs",
       },
     ],

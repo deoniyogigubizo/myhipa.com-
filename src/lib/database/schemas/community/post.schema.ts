@@ -102,7 +102,7 @@ const PostEngagementSchema = new Schema(
     likedBy: [
       {
         type: Schema.Types.ObjectId,
-        ref: "users",
+        ref: "User",
         description: "Users who liked (capped at 1000)",
       },
     ],
@@ -180,7 +180,7 @@ export const PostSchema = new Schema<IPost>(
 
     authorId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "Author ID is required"],
       description: "Reference to post author",
     },

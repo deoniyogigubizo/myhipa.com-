@@ -83,7 +83,7 @@ const DisputeInfoSchema = new Schema(
     ],
     adminId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       description: "Admin who resolved the dispute",
     },
     resolution: {
@@ -185,7 +185,7 @@ export const TransactionSchema = new Schema<ITransaction>(
 
     buyerId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "Buyer ID is required"],
       description: "Reference to buyer (user)",
     },

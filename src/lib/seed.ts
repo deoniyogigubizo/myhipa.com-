@@ -1459,9 +1459,11 @@ async function seedDatabase() {
     const sellerUserIds: mongoose.Types.ObjectId[] = [];
 
     for (const seller of sellers) {
+      const plainPassword = "seller123";
+      const passwordHash = await bcrypt.hash(plainPassword, 12);
       const user = await User.create({
         email: seller.email,
-        passwordHash: "$2a$10$mockhashedpasswordfortesting123456",
+        passwordHash,
         phone: seller.phone,
         role: "seller",
         profile: {

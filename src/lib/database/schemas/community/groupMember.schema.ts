@@ -44,7 +44,7 @@ export const GroupMemberSchema = new Schema<IGroupMember>(
 
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "User ID is required"],
       description: "Reference to user",
     },

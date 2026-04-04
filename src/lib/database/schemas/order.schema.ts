@@ -379,7 +379,7 @@ export const OrderSchema = new Schema<IOrder>(
 
     buyerId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "Buyer ID is required"],
       index: true,
       description: "Reference to buyer (user)",

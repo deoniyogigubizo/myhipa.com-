@@ -405,7 +405,7 @@ export const SellerSchema = new Schema<ISeller>(
 
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: [true, "User ID is required"],
       unique: true,
       description: "Reference to users collection",
