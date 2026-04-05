@@ -1349,7 +1349,7 @@ function MessagesPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <main className="flex-1 flex overflow-hidden mt-4 md:mt-6">
+      <main className="flex-1 flex overflow-hidden mt-24 sm:mt-34 md:mt-20 lg:mt-24">
         {/* Left Panel - Conversation List */}
         <div
           className={`w-full md:w-80 lg:w-96 border-r border-gray-200 bg-white flex flex-col ${showMobileConversations ? "flex" : "hidden md:flex"}`}
@@ -1498,12 +1498,12 @@ function MessagesPageContent() {
 
         {/* Center Panel - Chat Area */}
         <div
-          className={`flex-1 flex flex-col bg-white ${!showMobileConversations ? "flex" : "hidden md:flex"}`}
+          className={`flex-1 flex flex-col bg-white h-[calc(100vh-8rem)] sm:h-[calc(90vh-10rem)] ${!showMobileConversations ? "flex" : "hidden md:flex"}`}
         >
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 flex items-center gap-3">
+              <div className="p-4 sm:p-14 border-b border-gray-200 flex items-center gap-3">
                 <button
                   onClick={() => setShowMobileConversations(true)}
                   className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -1850,11 +1850,69 @@ function MessagesPageContent() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">💬</div>
-                      <p>No messages yet</p>
-                      <p className="text-sm">Start the conversation!</p>
+                  <div className="flex-1 flex flex-col items-center justify-center h-full text-gray-500 px-4 pb-32">
+                    <div className="text-center max-w-sm mb-6">
+                      <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-10 h-10 text-teal-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Start chatting with{" "}
+                        {selectedConversation.otherParticipant?.name ||
+                          "this user"}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Send a message to begin your conversation
+                      </p>
+                    </div>
+                    <div className="w-full max-w-md">
+                      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-3 shadow-sm">
+                        <input
+                          type="text"
+                          value={newMessage}
+                          onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            handleTyping();
+                          }}
+                          placeholder="Type a message..."
+                          className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400"
+                        />
+                        <button
+                          type="button"
+                          disabled={!newMessage.trim() || sending}
+                          onClick={() =>
+                            handleSendMessage({
+                              preventDefault: () => {},
+                            } as React.FormEvent)
+                          }
+                          className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -2156,11 +2214,8 @@ function MessagesPageContent() {
                 </div>
               )}
 
-              <form
-                onSubmit={handleSendMessage}
-                className="p-4 border-t border-gray-200"
-              >
-                <div className="flex items-center gap-2">
+              <div className="p-1 mt-auto border-t border-gray-200 bg-white">
+                <div className="flex items-center gap-2 max-w-4xl mx-auto">
                   {/* Media Menu Button */}
                   <div className="relative">
                     <button
@@ -2393,7 +2448,7 @@ function MessagesPageContent() {
                     </svg>
                   </button>
                 </div>
-              </form>
+              </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">

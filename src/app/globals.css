@@ -173,3 +173,31 @@ html {
 .border-sky-accent {
   border-color: var(--color-sky);
 }
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+@media (max-width: 767px) {
+  .mobile-dashboard-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .mobile-card-variable-1 {
+    grid-column: span 1;
+  }
+
+  .mobile-card-variable-2 {
+    grid-column: span 2;
+  }
+}
